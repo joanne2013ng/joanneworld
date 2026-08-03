@@ -163,6 +163,29 @@ article.post blockquote {
   font-size: 0.9rem;
 }
 
+article.post table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.3rem 0;
+  font-size: 0.92rem;
+}
+
+article.post th,
+article.post td {
+  text-align: left;
+  padding: 0.5rem 0.75rem 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+article.post th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+article.post .negative {
+  color: var(--accent);
+}
+
 footer.site-footer {
   border-top: 1px solid var(--border);
   padding: 1.5rem 0 2.5rem;

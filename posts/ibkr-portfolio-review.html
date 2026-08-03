@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IBKR Portfolio Review &mdash; Joanne's World</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="site-title" href="../index.html">Joanne's World</a>
+      <nav class="site-nav">
+        <a href="../index.html">Home</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <a class="back-link" href="../index.html">&larr; Back to all posts</a>
+    <article class="post">
+      <h1>IBKR Portfolio Review</h1>
+      <div class="post-meta">August 3, 2026</div>
+
+      <p>Pulled the Interactive Brokers PortfolioAnalyst statement (account U***89825, name on file Poh sai Yeo) and went through the full 42-page report covering May 27, 2024 through July 30, 2026. Writing down the numbers here mostly to keep myself honest about how this account is actually doing.</p>
+
+      <h2>Performance &mdash; the headline problem</h2>
+      <table>
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Ending NAV</td><td>$56,124.93</td></tr>
+        <tr><td>Cumulative return since inception</td><td class="negative">-4.95%</td></tr>
+        <tr><td>S&amp;P 500 TR / EFA / VT over same period</td><td>+44.10% / +42.25% / +44.68%</td></tr>
+        <tr><td>1-month return</td><td>+2.57%</td></tr>
+        <tr><td>3-month return</td><td class="negative">-3.53%</td></tr>
+        <tr><td>Best month</td><td>+14.64% (Aug 2025)</td></tr>
+        <tr><td>Worst month</td><td class="negative">-12.02% (Jul 2025)</td></tr>
+        <tr><td>Max drawdown</td><td class="negative">-27.22% (Aug 2025 &rarr; May 2026, still not recovered)</td></tr>
+        <tr><td>Sharpe ratio</td><td>-0.22</td></tr>
+        <tr><td>Turnover</td><td>368%</td></tr>
+      </table>
+      <p>The account is down roughly 5% since inception while every benchmark it gets compared against is up over 40% &mdash; call it a ~49-point underperformance gap. That's the thing to fix.</p>
+
+      <h2>Cash flow since inception</h2>
+      <table>
+        <tr><th>Item</th><th>Amount</th></tr>
+        <tr><td>Deposits</td><td>+$60,087.40</td></tr>
+        <tr><td>Dividends</td><td>+$775.03</td></tr>
+        <tr><td>Interest</td><td>+$519.30</td></tr>
+        <tr><td>Fees &amp; commissions</td><td class="negative">-$137.35</td></tr>
+        <tr><td>Market value change (MTM)</td><td class="negative">-$5,132.46</td></tr>
+      </table>
+
+      <h2>Current long positions (as of 7/30/2026)</h2>
+      <table>
+        <tr><th>Symbol</th><th>Shares</th><th>Value</th><th>Unrealized P&amp;L</th><th>CTR</th></tr>
+        <tr><td>FDS (FactSet)</td><td>100</td><td>$26,303</td><td class="negative">-$8,021</td><td class="negative">-13.36%</td></tr>
+        <tr><td>POOL (Pool Corp)</td><td>100</td><td>$19,068</td><td class="negative">-$8,772</td><td class="negative">-15.50%</td></tr>
+        <tr><td>ZTS (Zoetis)</td><td>100</td><td>$7,603</td><td class="negative">-$5,957</td><td class="negative">-10.67%</td></tr>
+        <tr><td>GLS (gold ETF)</td><td>2</td><td>$8.80</td><td class="negative">-$2.75</td><td>&mdash;</td></tr>
+        <tr><td>Cash (USD)</td><td>&mdash;</td><td>$4,710.52</td><td>&mdash;</td><td>&mdash;</td></tr>
+      </table>
+      <p>Concentration risk is the other big issue here: FDS + POOL + ZTS make up about 90% of long equity value, and all three are underwater right now for a combined -$22,750 unrealized loss.</p>
+
+      <h2>Options book</h2>
+      <p>Net short options value: -$3,346, mostly short-dated (Aug 2026 expiries) straddles/strangles on AVGO, SPY, GOOGL, and IWM. Historically there's been a lot of options churn &mdash; dozens of small round-trips on names like AAPL, NVDA, GOOGL, CELH, and ELV, most expiring worthless or closed at a loss on the stock side. Options contributed +67.75% to return overall, stocks contributed -49.69%, and it nets out badly.</p>
+
+      <h2>Dividends &amp; ESG</h2>
+      <p>Dividends received: $775.03 total, from TSM, FDS, ZTS, and POOL. ESG combined score is 5/10, with the book concentrated in Industrials, Consumer Cyclicals, and Healthcare.</p>
+
+      <h2>Bottom line</h2>
+      <p>Small account (~$56K), heavily concentrated in three losing stock positions, plus an active but net-negative options overlay, underperforming the S&amp;P 500 / global benchmarks by about 49 percentage points since inception. Concentration and the options churn are the two things worth actually addressing.</p>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      &copy; 2026 Joanne's World
+    </div>
+  </footer>
+</body>
+</html>
