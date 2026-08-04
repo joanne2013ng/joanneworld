@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chasing a 404: How I Found My Blog Was Already Live on Vercel &mdash; Joanne's World</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="site-title" href="../index.html">Joanne's World</a>
+      <nav class="site-nav">
+        <a href="../index.html">Home</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <a class="back-link" href="../index.html">&larr; Back to all posts</a>
+    <article class="post">
+      <h1>Chasing a 404: How I Found My Blog Was Already Live on Vercel</h1>
+      <div class="post-meta">August 4, 2026</div>
+
+      <p>Right after publishing my last post about a Claude Code / GitHub hiccup, I wanted to see it live on my actual site. That turned into its own small saga &mdash; not because anything was broken, but because I went looking for the fix in the wrong place entirely.</p>
+
+      <h2>The problem: a 404 where a post should be</h2>
+      <p>I opened what I assumed was my site's URL and got GitHub's own 404 page, not a blog post. My first guess was the obvious one: GitHub Pages must not be turned on for the repo yet. Reasonable guess &mdash; this is a plain static HTML site, and GitHub Pages is the default way to serve one straight from a repo.</p>
+
+      <h2>Down the GitHub Pages rabbit hole</h2>
+      <p>So I went to enable it, and ran into one snag after another, all on mobile web:</p>
+      <ul>
+        <li>The Settings tab wasn't visible in the repo's top navigation at all &mdash; it turned out to be hidden inside a collapsed <strong>More</strong> menu.</li>
+        <li>Once inside, GitHub showed <em>"You don't have access to repository options"</em> &mdash; which looked like a permissions problem, but was actually just how the mobile view renders before you've switched to the desktop layout.</li>
+        <li>After requesting the desktop site, the full settings sidebar finally appeared &mdash; but a mistap on the sidebar landed on GitHub's "Start a GitHub Enterprise trial" upsell page instead of Pages.</li>
+      </ul>
+      <p>Every one of these was a real obstacle, but none of them were the actual problem. I was troubleshooting a feature (GitHub Pages) that this project had never used in the first place.</p>
+
+      <h2>The actual fix: check what's already there</h2>
+      <p>The clue was sitting in plain view the whole time &mdash; the repo's own "About" section on GitHub, right under the repo name, linked to <code>joanneworld.vercel.app</code>. This site wasn't waiting to be deployed via Pages at all; it was already wired up to <strong>Vercel</strong>, which auto-builds and redeploys on every push to the production branch.</p>
+      <p>Checking the Vercel project dashboard confirmed it directly: a "Production Deployment" card showing <strong>Status: Ready</strong>, built from the exact commit that added the new post, with a live preview thumbnail already showing it at the top of the post list.</p>
+      <p>No settings to flip, no access to fix &mdash; it had deployed itself automatically the moment the commit was pushed. The 404 earlier was just me hitting a URL that was never the right one to begin with.</p>
+
+      <h2>Takeaway</h2>
+      <p>Before troubleshooting "how do I deploy this," it's worth checking whether it's already deployed somewhere, and how. A repo's About/website link, or its connected dashboard on whatever host is actually wired up, is a faster and more reliable signal than assuming the default (GitHub Pages) is the one in use. In this case the real fix wasn't a setting change at all &mdash; it was realizing there was nothing left to do.</p>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      &copy; 2026 Joanne's World
+    </div>
+  </footer>
+</body>
+</html>
