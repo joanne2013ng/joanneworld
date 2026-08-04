@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Why I Couldn't Connect Claude Code to My paulsworld GitHub Repo &mdash; Joanne's World</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="site-title" href="../index.html">Joanne's World</a>
+      <nav class="site-nav">
+        <a href="../index.html">Home</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <a class="back-link" href="../index.html">&larr; Back to all posts</a>
+    <article class="post">
+      <h1>Why I Couldn't Connect Claude Code to My paulsworld GitHub Repo</h1>
+      <div class="post-meta">August 4, 2026</div>
+
+      <p>I ran into a snag today trying to get Claude Code to work with a second GitHub repo, <code>paulyeo11/paulsworld</code>, from inside a session that was already set up against this blog's repo. It didn't work, and the reason turned out to be a straightforward platform limitation rather than a bug &mdash; so here's what happened and how I actually fixed it, in case it saves someone else the confusion.</p>
+
+      <h2>The problem</h2>
+      <p>My Claude Code session was already bound to <code>joanne2013ng/joanneworld</code>. When I asked it to also attach <code>paulyeo11/paulsworld</code> so I could work across both repos in one place, the request failed with an error along the lines of:</p>
+
+      <blockquote>cross-tier adds are not supported: session already has repos from owner(s) [joanne2013ng]. Start a new session with the requested repo as the initial source, or add a repo from the same owner as the existing sources.</blockquote>
+
+      <p>In other words, a single Claude Code session can only add extra repositories that belong to the <em>same</em> GitHub owner/organization as the one it started with. Since <code>joanneworld</code> is owned by <code>joanne2013ng</code> and <code>paulsworld</code> is owned by <code>paulyeo11</code>, that's a cross-owner ("cross-tier") request, and it's blocked.</p>
+
+      <h2>A detour: the Connectors panel isn't it</h2>
+      <p>My first instinct was to go digging through Settings &rarr; Connectors, thinking that's where repo access gets granted. It isn't. Connectors is for non-GitHub data sources like Google Drive &mdash; it has nothing to do with picking a repository for a session. The actual repo/source picker lives in the <strong>New session</strong> flow, not in Connectors, and it's easy to end up in the wrong panel if you're not sure where to look.</p>
+
+      <h2>The actual fix</h2>
+      <p>Since an existing session can't be retargeted across owners, the fix is to start a fresh session with the other repo selected as its initial source:</p>
+
+      <ol>
+        <li>From claude.ai/code, start a <strong>New session</strong>.</li>
+        <li>In the source/repository picker, search for <code>paulyeo11/paulsworld</code>.</li>
+        <li>If it doesn't show up, the Claude GitHub App likely isn't authorized for that owner yet &mdash; grant access from the repo picker's "configure GitHub access" link (an org admin may need to approve it), then search again.</li>
+        <li>Pick a branch (or leave it on the default) and any environment settings, then create the session.</li>
+      </ol>
+
+      <p>That new session clones <code>paulsworld</code> fresh and works with it independently. It's a separate session from the one tied to <code>joanneworld</code> &mdash; there's no single session that spans both repos when they belong to different owners.</p>
+
+      <h2>Takeaway</h2>
+      <p>If you manage repos under more than one GitHub account or org, plan on one Claude Code session per owner rather than expecting to mix and match repos freely inside one session. And if a repo isn't reachable, check GitHub App authorization before assuming something is broken.</p>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      &copy; 2026 Joanne's World
+    </div>
+  </footer>
+</body>
+</html>
