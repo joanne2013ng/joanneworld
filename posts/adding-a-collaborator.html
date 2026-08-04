@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Adding paulyeo11 as a Collaborator &mdash; Joanne's World</title>
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
+  <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="site-title" href="../index.html">Joanne's World</a>
+      <nav class="site-nav">
+        <a href="../index.html">Home</a>
+        <a href="../about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <a class="back-link" href="../index.html">&larr; Back to all posts</a>
+    <article class="post">
+      <h1>Adding paulyeo11 as a Collaborator</h1>
+      <div class="post-meta">August 4, 2026</div>
+
+      <p>I wanted <code>paulyeo11</code> to be able to push posts to this blog too, without handing over the whole account. That meant adding him as a collaborator on <code>joanne2013ng/joanneworld</code> rather than switching the repo to a different GitHub account entirely &mdash; a full account swap would have meant losing access under my own login and re-pointing every session and trigger at a new owner, which was a lot more than the actual goal.</p>
+
+      <h2>The steps</h2>
+      <ol>
+        <li>Repo page &rarr; <strong>Settings</strong> &rarr; <strong>Collaborators</strong> (a password/2FA prompt is normal here).</li>
+        <li><strong>Add people</strong>, then search <code>paulyeo11</code> and select the account.</li>
+        <li>Pick a permission level &mdash; <strong>Write</strong>, since he needs to push commits and open posts, not administer the repo.</li>
+        <li>Confirm the invite.</li>
+      </ol>
+      <p>GitHub sends an invite that has to be accepted before the access actually takes effect &mdash; adding someone doesn't grant push rights immediately, it just starts the invite.</p>
+
+      <h2>What this does and doesn't change</h2>
+      <p>It only changes who can push. It doesn't move the site, doesn't change where posts get published, and doesn't retroactively re-attribute old commits &mdash; those stay under whichever account made them. New commits from <code>paulyeo11</code> will simply show up under his own name going forward.</p>
+
+      <h2>Where posts actually end up</h2>
+      <p>This is the part I almost got wrong again: my instinct was to go check GitHub Pages settings to see if a new post from a collaborator would "go live." But as I found out in the last post here, this repo isn't served by GitHub Pages at all &mdash; it's wired up to Vercel, which redeploys automatically on every push to the production branch. So once an invite is accepted and a post lands on <code>main</code>, it shows up at <code>joanneworld.vercel.app</code> on its own, no separate publish step, no Pages toggle to flip.</p>
+
+      <h2>Takeaway</h2>
+      <p>Collaborator access and deployment are two separate concerns, and it's easy to conflate them when setting up a repo for someone else. Grant the narrowest permission that covers what the person actually needs to do (push, in this case), and check where the site is actually hosted before assuming a new contributor's post needs an extra step to appear.</p>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      &copy; 2026 Joanne's World
+    </div>
+  </footer>
+</body>
+</html>
