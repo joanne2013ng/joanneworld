@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Company Screener &mdash; Joanne's World</title>
+  <meta name="description" content="Filter companies by sector and revenue size &mdash; a static company screener.">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    :root { --chip-fg: #fff; --sz-micro:#94a3b8; --sz-small:#38bdf8; --sz-mid:#34d399; --sz-large:#f4a261; --sz-mega:#c084fc; }
+    @media (prefers-color-scheme: dark) { :root { --chip-fg: #17161a; } }
+
+    .app-wrap { max-width: 860px; }
+
+    .disclaimer {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin: 1.3rem 0 1.8rem;
+    }
+
+    .filters-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.4rem;
+      margin: 1.5rem 0;
+    }
+    .filters-card h2 {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin: 0 0 1rem;
+    }
+    .filt-block { margin-bottom: 1.1rem; }
+    .filt-block:last-of-type { margin-bottom: 0; }
+    .filt-lbl {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .chip {
+      background: transparent;
+      border: 1.4px solid var(--border);
+      color: var(--muted);
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.4rem 0.85rem;
+      border-radius: 16px;
+      cursor: pointer;
+    }
+    .chip.active { background: var(--accent); border-color: var(--accent); color: var(--chip-fg); }
+
+    .reset-btn {
+      background: transparent;
+      border: 1.4px solid var(--border);
+      color: var(--muted);
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 14px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    .reset-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+    .result-count { font-size: 0.85rem; color: var(--muted); margin: 1.2rem 0 0.6rem; }
+    .col-toggle {
+      margin-bottom: 0.8rem;
+    }
+    .table-scroll { overflow-x: auto; }
+    table.scr { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    table.scr th, table.scr td { padding: 0.55rem 0.6rem 0.55rem 0; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    table.scr th { color: var(--muted); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.03em; font-weight: 700; }
+    table.scr td.num { text-align: right; }
+    table.scr td.sym { font-weight: 700; color: var(--accent); }
+    table.scr td .fy { display: block; color: var(--muted); font-size: 0.7rem; margin-top: 1px; }
+    table.scr.hide-cols .sc-hide-col { display: none; }
+
+    .sizepill { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; font-weight: 600; color: var(--fg); }
+    .sizepill .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+    .sizepill.Micro .dot { background: var(--sz-micro); }
+    .sizepill.Small .dot { background: var(--sz-small); }
+    .sizepill.Mid .dot { background: var(--sz-mid); }
+    .sizepill.Large .dot { background: var(--sz-large); }
+    .sizepill.Mega .dot { background: var(--sz-mega); }
+
+    .empty-row { text-align: center; color: var(--muted); padding: 1.4rem 0; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="site-title" href="index.html">Joanne's World</a>
+      <nav class="site-nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="company-screener.html">Screener</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap app-wrap">
+    <a class="back-link" href="index.html">&larr; Back to home</a>
+    <article class="post">
+      <h1>Company Screener</h1>
+      <div class="post-meta">A small research tool, ported from Paul's World</div>
+      <p>Filter a set of well-known companies by sector and by size (measured on last reported fiscal year revenue).</p>
+
+      <div class="disclaimer">
+        &#9888;&#65039; This screener uses static revenue figures (sourced from SEC filings / investor releases, snapshotted August 2026) &mdash; not live data. The original version of this tool also shows live share-price momentum, but that relies on a serverless price-feed API that this site doesn't have (it's a plain static site with no backend), so those columns aren't included here.
+      </div>
+
+      <div class="filters-card">
+        <h2>Filters</h2>
+        <div class="filt-block">
+          <div class="filt-lbl">Sector</div>
+          <div class="chip-row" id="segmentRow"></div>
+        </div>
+        <div class="filt-block">
+          <div class="filt-lbl">Company Size (by last year's revenue)</div>
+          <div class="chip-row" id="sizeRow"></div>
+        </div>
+        <button class="reset-btn" onclick="resetFilters()">Reset all filters</button>
+      </div>
+
+      <div class="result-count" id="resultCount"></div>
+      <button class="chip col-toggle active" id="colBtn" onclick="toggleColumns()">Hide company/sector columns</button>
+      <div class="table-scroll">
+        <table class="scr hide-cols" id="scrTable">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th class="sc-hide-col">Company</th>
+              <th class="sc-hide-col">Sector</th>
+              <th class="num">Revenue (latest FY)</th>
+              <th>Size</th>
+            </tr>
+          </thead>
+          <tbody id="scrBody"></tbody>
+        </table>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      &copy; 2026 Joanne's World
+    </div>
+  </footer>
+
+  <script>
+    var SEGMENTS = ['Semiconductors','Big Tech / Software','E-Commerce & Retail','Consumer Staples','Healthcare','Financials','Energy','Automotive','Industrials','Restaurants/Consumer Discretionary'];
+    var SIZES = ['Micro','Small','Mid','Large','Mega'];
+    var SIZES_SUB = { Micro:'<$1B', Small:'$1B–$10B', Mid:'$10B–$50B', Large:'$50B–$200B', Mega:'>$200B' };
+
+    var COMPANIES = [
+      { sym:'NVDA', name:'NVIDIA Corporation', segment:'Semiconductors', rev:[{l:'FY2024',v:60.9},{l:'FY2025',v:130.5},{l:'FY2026',v:215.9}] },
+      { sym:'AVGO', name:'Broadcom Inc.', segment:'Semiconductors', rev:[{l:'FY2023',v:35.8},{l:'FY2024',v:51.6},{l:'FY2025',v:63.9}] },
+      { sym:'MSFT', name:'Microsoft Corporation', segment:'Big Tech / Software', rev:[{l:'FY2023',v:211.9},{l:'FY2024',v:245.1},{l:'FY2025',v:281.7}] },
+      { sym:'AAPL', name:'Apple Inc.', segment:'Big Tech / Software', rev:[{l:'FY2023',v:383.3},{l:'FY2024',v:391.0},{l:'FY2025',v:416.2}] },
+      { sym:'GOOGL', name:'Alphabet Inc.', segment:'Big Tech / Software', rev:[{l:'FY2023',v:307.4},{l:'FY2024',v:350.0},{l:'FY2025',v:402.8}] },
+      { sym:'AMZN', name:'Amazon.com Inc.', segment:'E-Commerce & Retail', rev:[{l:'FY2023',v:574.8},{l:'FY2024',v:638.0},{l:'FY2025',v:716.9}] },
+      { sym:'WMT', name:'Walmart Inc.', segment:'E-Commerce & Retail', rev:[{l:'FY2023',v:611},{l:'FY2024',v:648},{l:'FY2025',v:681}] },
+      { sym:'BBW', name:'Build-A-Bear Workshop', segment:'E-Commerce & Retail', rev:[{l:'FY2022',v:0.468},{l:'FY2023',v:0.486},{l:'FY2024',v:0.496}] },
+      { sym:'KO', name:'The Coca-Cola Company', segment:'Consumer Staples', rev:[{l:'2023',v:45.8},{l:'2024',v:47.1},{l:'2025',v:47.9}] },
+      { sym:'PEP', name:'PepsiCo Inc.', segment:'Consumer Staples', rev:[{l:'2023',v:91.5},{l:'2024',v:91.9},{l:'2025',v:93.9}] },
+      { sym:'SAM', name:'Boston Beer Company', segment:'Consumer Staples', rev:[{l:'2023',v:2.01},{l:'2024',v:2.01},{l:'2025',v:1.96}] },
+      { sym:'UNH', name:'UnitedHealth Group', segment:'Healthcare', rev:[{l:'2023',v:371.6},{l:'2024',v:400.3},{l:'2025',v:447.6}] },
+      { sym:'JNJ', name:'Johnson & Johnson', segment:'Healthcare', rev:[{l:'2023',v:85.2},{l:'2024',v:88.8},{l:'2025',v:94.2}] },
+      { sym:'JPM', name:'JPMorgan Chase & Co.', segment:'Financials', rev:[{l:'2023',v:162.4},{l:'2024',v:169.4},{l:'2025',v:182.4}] },
+      { sym:'V', name:'Visa Inc.', segment:'Financials', rev:[{l:'FY2023',v:32.7},{l:'FY2024',v:35.9},{l:'FY2025',v:40.0}] },
+      { sym:'MA', name:'Mastercard Inc.', segment:'Financials', rev:[{l:'2023',v:25.1},{l:'2024',v:28.2},{l:'2025',v:32.8}] },
+      { sym:'XOM', name:'Exxon Mobil Corporation', segment:'Energy', rev:[{l:'2023',v:344.6},{l:'2024',v:349.6},{l:'2025',v:332.2}] },
+      { sym:'CVX', name:'Chevron Corporation', segment:'Energy', rev:[{l:'2023',v:196.9},{l:'2024',v:193.4},{l:'2025',v:187.0}] },
+      { sym:'TSLA', name:'Tesla Inc.', segment:'Automotive', rev:[{l:'2023',v:96.8},{l:'2024',v:97.7},{l:'2025',v:94.8}] },
+      { sym:'RIVN', name:'Rivian Automotive', segment:'Automotive', rev:[{l:'2023',v:4.43},{l:'2024',v:4.97},{l:'2025',v:5.39}] },
+      { sym:'BA', name:'The Boeing Company', segment:'Industrials', rev:[{l:'2023',v:77.8},{l:'2024',v:66.5},{l:'2025',v:89.5}] },
+      { sym:'LECO', name:'Lincoln Electric Holdings', segment:'Industrials', rev:[{l:'2023',v:4.19},{l:'2024',v:4.01},{l:'2025',v:4.23}] },
+      { sym:'MCD', name:"McDonald's Corporation", segment:'Restaurants/Consumer Discretionary', rev:[{l:'2023',v:25.5},{l:'2024',v:25.9},{l:'2025',v:26.9}] },
+      { sym:'WING', name:'Wingstop Inc.', segment:'Restaurants/Consumer Discretionary', rev:[{l:'2023',v:0.46},{l:'2024',v:0.63},{l:'2025',v:0.70}] }
+    ];
+
+    function sizeBucket(revB) {
+      if (revB < 1) return 'Micro';
+      if (revB < 10) return 'Small';
+      if (revB < 50) return 'Mid';
+      if (revB < 200) return 'Large';
+      return 'Mega';
+    }
+    COMPANIES.forEach(function (c) {
+      c.lastYrRev = c.rev[c.rev.length - 1].v;
+      c.size = sizeBucket(c.lastYrRev);
+    });
+
+    var state = { segments: new Set(SEGMENTS), sizes: new Set(SIZES) };
+
+    function buildSegmentRow() {
+      var row = document.getElementById('segmentRow');
+      row.innerHTML = '';
+      SEGMENTS.forEach(function (seg) {
+        var chip = document.createElement('button');
+        chip.className = 'chip' + (state.segments.has(seg) ? ' active' : '');
+        chip.textContent = seg;
+        chip.onclick = function () {
+          if (state.segments.has(seg)) state.segments.delete(seg); else state.segments.add(seg);
+          buildSegmentRow(); render();
+        };
+        row.appendChild(chip);
+      });
+    }
+
+    function buildSizeRow() {
+      var row = document.getElementById('sizeRow');
+      row.innerHTML = '';
+      SIZES.forEach(function (sz) {
+        var chip = document.createElement('button');
+        chip.className = 'chip' + (state.sizes.has(sz) ? ' active' : '');
+        chip.textContent = sz + ' ' + SIZES_SUB[sz];
+        chip.onclick = function () {
+          if (state.sizes.has(sz)) state.sizes.delete(sz); else state.sizes.add(sz);
+          buildSizeRow(); render();
+        };
+        row.appendChild(chip);
+      });
+    }
+
+    function resetFilters() {
+      state.segments = new Set(SEGMENTS);
+      state.sizes = new Set(SIZES);
+      buildSegmentRow(); buildSizeRow();
+      render();
+    }
+
+    function fmtRev(v) { return '$' + v.toFixed(v < 1 ? 3 : 1) + 'B'; }
+
+    function toggleColumns() {
+      var t = document.getElementById('scrTable');
+      var btn = document.getElementById('colBtn');
+      var hidden = !t.classList.contains('hide-cols');
+      t.classList.toggle('hide-cols', hidden);
+      btn.classList.toggle('active', hidden);
+    }
+
+    function render() {
+      var rows = COMPANIES.filter(function (c) {
+        return state.segments.has(c.segment) && state.sizes.has(c.size);
+      });
+
+      document.getElementById('resultCount').textContent =
+        'Showing ' + rows.length + ' of ' + COMPANIES.length + ' companies';
+
+      var tbody = document.getElementById('scrBody');
+      if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-row">No companies match these filters</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = rows.map(function (c) {
+        var revEntry = c.rev[c.rev.length - 1];
+        return '<tr>' +
+          '<td class="sym">' + c.sym + '</td>' +
+          '<td class="sc-hide-col">' + c.name + '</td>' +
+          '<td class="sc-hide-col">' + c.segment + '</td>' +
+          '<td class="num">' + fmtRev(revEntry.v) + '<span class="fy">' + revEntry.l + '</span></td>' +
+          '<td><span class="sizepill ' + c.size + '"><span class="dot"></span>' + c.size + '</span></td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    buildSegmentRow();
+    buildSizeRow();
+    render();
+  </script>
+</body>
+</html>
