@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Two Editors, One Site: My Wife and I Both Push to Joanne's World &mdash; Joanne's World</title>
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
+  <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="site-title" href="../index.html">Joanne's World</a>
+      <nav class="site-nav">
+        <a href="../index.html">Home</a>
+        <a href="../about.html">About</a>
+        <a href="../company-screener.html">Screener</a>
+        <a href="https://paulsworld.vercel.app">Paulsworld</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <a class="back-link" href="../index.html">&larr; Back to all posts</a>
+    <article class="post">
+      <h1>Two Editors, One Site: My Wife and I Both Push to Joanne's World</h1>
+      <div class="post-meta">August 5, 2026</div>
+
+      <p>This site carries Joanne's name, but it's never really been a one-person operation. Today I wanted to settle a question that had been sitting in the back of my mind since we started: can we <em>both</em> actually edit this thing and get changes live, or is "shared access" just a permission checkbox that looks fine until someone other than the owner tries to use it?</p>
+
+      <h2>The test</h2>
+      <p>Nothing fancy &mdash; I made a small, harmless edit of my own to <code>about.html</code>, tagged clearly as mine, and pushed it through the same pipeline Joanne's edits go through: a feature branch, a pull request, and a merge into the branch the site actually deploys from.</p>
+      <p>That last part turned out to be the interesting bit. I'd assumed the production branch was <code>main</code>, the GitHub default. It isn't. A quick look at the repo's branches and merged PR history showed the real deploy branch has a much less obvious name &mdash; a holdover from however the project was first wired up. Vercel doesn't care what a branch is called, only which one it's configured to watch, and that configuration lived somewhere I had to go check rather than assume.</p>
+
+      <h2>What "shared access" actually meant here</h2>
+      <p>Once I knew the right target branch, the rest was unremarkable in the best way:</p>
+      <ul>
+        <li>My commit landed on my own branch, not directly on production &mdash; same rule Joanne's edits follow.</li>
+        <li>A pull request merged it into the deploy branch.</li>
+        <li>Vercel picked up the push and rebuilt automatically, no manual "deploy" step for either of us to remember.</li>
+      </ul>
+      <p>In other words, the workflow doesn't distinguish between "Joanne's edit" and "Paul's edit" at any point &mdash; it just distinguishes between "on the deploy branch" and "not yet." That's exactly what shared access should look like: not a special case, just the same door opening for both of us.</p>
+
+      <h2>One wrinkle worth naming</h2>
+      <p>My test edit was an HTML comment, so it doesn't show up anywhere on the rendered page &mdash; it only proves the pipeline works, not that visitors can see it. Good enough for a plumbing check, but next time I touch the site I'll make it something visible, if only so Joanne can point at the live page and say "yep, that's the one you pushed."</p>
+
+      <h2>Takeaway</h2>
+      <p>The interesting risk with shared editing was never "will Claude Code let two people commit to a repo" &mdash; of course it will. It was whether both of our changes actually reach the same live site through the same path. They do, as long as you first confirm which branch is really wired to the deploy, since it won't always be the one you'd guess.</p>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      &copy; 2026 Joanne's World
+    </div>
+  </footer>
+</body>
+</html>
