@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Training Jeremy: Giving Him Access to Build on Joanne's World &mdash; Joanne's World</title>
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
+  <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="site-title" href="../index.html">Joanne's World</a>
+      <nav class="site-nav">
+        <a href="../index.html">Home</a>
+        <a href="../about.html">About</a>
+        <a href="../company-screener.html">Screener</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <a class="back-link" href="../index.html">&larr; Back to all posts</a>
+    <article class="post">
+      <h1>Training Jeremy: Giving Him Access to Build on Joanne's World</h1>
+      <div class="post-meta">August 5, 2026</div>
+
+      <p>I'm Paul. Jeremy is just getting started with coding, and I wanted to teach him by having him actually push real changes to a real site &mdash; this one &mdash; instead of a throwaway sandbox. That meant giving him genuine write access, not just showing him a screen recording. Here's the exact procedure I used, step by step, so I can hand it to him (or anyone else I'm onboarding) next time.</p>
+
+      <h2>1. Add him as a collaborator on GitHub</h2>
+      <ol>
+        <li>Open the repo &rarr; <strong>Settings</strong> &rarr; <strong>Collaborators and teams</strong>. On mobile, the GitHub app's own menus don't expose this &mdash; open the repo in Safari (or any browser) instead, since the full settings UI only shows up there.</li>
+        <li>Tap <strong>Add people</strong>, search for Jeremy's GitHub username, and select his account.</li>
+        <li>Give him <strong>Write</strong> access &mdash; enough to push commits and open pull requests, not enough to change repo settings or remove collaborators.</li>
+        <li>Send the invite.</li>
+      </ol>
+      <p>Adding someone doesn't grant access immediately &mdash; GitHub sends an email invite, and Jeremy has to accept it before any of his pushes will work.</p>
+
+      <h2>2. Connect his own Claude Code to the repo</h2>
+      <p>Jeremy has his own Claude Code subscription, so he doesn't need my login at all. Once he accepted the invite, he opened Claude Code on his own phone, started a session, and added <code>joanneworld</code> by name &mdash; it showed up automatically because GitHub now recognizes him as a collaborator.</p>
+
+      <h2>3. Run a real test, not a demo</h2>
+      <p>Instead of just telling Jeremy "it works," I had him make an actual edit and push it, then we watched it travel end to end: his change &rarr; a pull request &rarr; merged into the repo &rarr; picked up by our host &rarr; live on the real site. That last hop is where we almost got fooled.</p>
+
+      <h2>4. The gotcha: not every merge goes live automatically</h2>
+      <p>The site deploys via Vercel, and Vercel only auto-publishes pushes to whichever branch is configured as the <strong>Production Branch</strong> in its project settings. Our repo doesn't even have a branch called <code>main</code> &mdash; everything lives on differently-named branches. The fix was checking Vercel's <strong>Settings &rarr; Git &rarr; Production Branch</strong> and confirming it matched the branch we were actually merging into. Once pull requests land on that specific branch, Vercel rebuilds automatically within a minute or two &mdash; no extra "publish" step.</p>
+
+      <h2>5. Merge conflicts are normal, not a sign something's broken</h2>
+      <p>With two people pushing from separate sessions, two pull requests both touched the same nav menu at the same time. That's an ordinary merge conflict, not a failure: it just means git needs a human (or Claude) to decide how to combine both changes rather than picking one and silently dropping the other. Reviewing the conflicting lines and keeping both edits took under a minute.</p>
+
+      <h2>What I'm teaching Jeremy from this</h2>
+      <ul>
+        <li>Collaborator access and deployment are two different systems &mdash; being able to push to GitHub doesn't automatically mean a change is live, and it's worth knowing where the second wire is before assuming a change "didn't work."</li>
+        <li>A merge conflict is routine, not an emergency &mdash; read what both sides changed and combine them.</li>
+        <li>The smallest possible real change (even something invisible, like a code comment) is enough to prove a whole pipeline end to end, without risking anything on the live page.</li>
+      </ul>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      &copy; 2026 Joanne's World
+    </div>
+  </footer>
+</body>
+</html>
