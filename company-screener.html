@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Company Screener &mdash; Joanne's World</title>
+  <meta name="description" content="Filter companies by sector, revenue size, and live price momentum.">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .app-wrap { max-width: 900px; }
+
+    /* ===== Dark "app card" — styled to match the original T54 tool ===== */
+    .app-card-outer {
+      background: #0e1330;
+      color: #fff;
+      border-radius: 16px;
+      padding: 1.5rem 1.25rem 2rem;
+      margin: 1.5rem 0;
+    }
+    .app-card-outer .disclaimer {
+      background: rgba(244, 165, 0, 0.12);
+      border: 1px solid rgba(244, 165, 0, 0.4);
+      border-radius: 12px;
+      padding: 0.8rem 1rem;
+      font-size: 0.78rem;
+      color: #ffd97a;
+      line-height: 1.55;
+      margin-bottom: 1.3rem;
+    }
+    .card {
+      background: #1a1f3d;
+      border: 1px solid #2a3158;
+      border-radius: 14px;
+      padding: 1rem 1.1rem;
+      margin-bottom: 1.1rem;
+    }
+    .card h2 {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #8ea0ff;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin: 0 0 0.8rem;
+    }
+    .filt-block { margin-bottom: 1rem; }
+    .filt-block:last-child { margin-bottom: 0; }
+    .filt-lbl {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: rgba(255,255,255,0.55);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.5rem;
+    }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .chip {
+      background: rgba(255,255,255,0.08);
+      border: 1.4px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.8);
+      font: inherit;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 0.4rem 0.75rem;
+      border-radius: 16px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .chip.active { background: #f4c869; border-color: #f4c869; color: #0e1330; }
+    .period-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .period-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1.4px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.8);
+      font: inherit;
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 0.5rem 0.9rem;
+      border-radius: 14px;
+      cursor: pointer;
+    }
+    .period-btn.active { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+
+    .chip.lvl1.active { background: #f87171; border-color: #f87171; color: #0e1330; }
+    .chip.lvl2.active { background: #fb923c; border-color: #fb923c; color: #0e1330; }
+    .chip.lvl3.active { background: #fde047; border-color: #fde047; color: #0e1330; }
+    .chip.lvl4.active { background: #4ade80; border-color: #4ade80; color: #0e1330; }
+    .chip.lvl5.active { background: #10b981; border-color: #10b981; color: #0e1330; }
+    .chip.dlvl1.active { background: #4ade80; border-color: #4ade80; color: #0e1330; }
+    .chip.dlvl2.active { background: #fde047; border-color: #fde047; color: #0e1330; }
+    .chip.dlvl3.active { background: #fb923c; border-color: #fb923c; color: #0e1330; }
+    .chip.dlvl4.active { background: #f87171; border-color: #f87171; color: #0e1330; }
+    .chip.dlvl5.active { background: #a855f7; border-color: #a855f7; color: #fff; }
+
+    .reset-btn {
+      background: rgba(239,68,68,0.14);
+      border: 1.4px solid rgba(239,68,68,0.4);
+      color: #f87171;
+      font: inherit;
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 0.5rem 0.9rem;
+      border-radius: 14px;
+      cursor: pointer;
+      margin-top: 0.8rem;
+    }
+
+    .result-count { font-size: 0.8rem; color: rgba(255,255,255,0.55); margin-bottom: 0.6rem; }
+    .table-scroll { overflow-x: auto; }
+    table.scr { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+    table.scr th, table.scr td { padding: 0.55rem 0.5rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); white-space: nowrap; }
+    table.scr th { color: #8ea0ff; font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.03em; font-weight: 800; }
+    table.scr td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    table.scr td.sym { font-weight: 800; color: #f4c869; }
+    table.scr td .fy { display: block; color: rgba(255,255,255,0.4); font-size: 0.66rem; margin-top: 1px; }
+    table.scr.hide-cols .sc-hide-col { display: none; }
+
+    .sizepill { display: inline-block; font-size: 0.66rem; font-weight: 800; padding: 3px 9px; border-radius: 10px; }
+    .sizepill.Micro { background: rgba(148,163,184,0.2); color: #cbd5e1; }
+    .sizepill.Small { background: rgba(96,165,250,0.2); color: #93c5fd; }
+    .sizepill.Mid { background: rgba(52,211,153,0.2); color: #6ee7b7; }
+    .sizepill.Large { background: rgba(244,165,0,0.2); color: #f4c869; }
+    .sizepill.Mega { background: rgba(239,68,68,0.2); color: #fca5a5; }
+
+    .tlpill { display: inline-flex; align-items: center; gap: 4px; font-size: 0.66rem; font-weight: 800; padding: 3px 9px; border-radius: 10px; white-space: nowrap; }
+    .tlpill.lvl1 { background: rgba(239,68,68,0.22); color: #fca5a5; }
+    .tlpill.lvl2 { background: rgba(249,115,22,0.22); color: #fdba74; }
+    .tlpill.lvl3 { background: rgba(234,179,8,0.22); color: #fde68a; }
+    .tlpill.lvl4 { background: rgba(52,211,153,0.22); color: #6ee7b7; }
+    .tlpill.lvl5 { background: rgba(16,185,129,0.3); color: #34d399; }
+    .tlpill.lvlna { background: rgba(148,163,184,0.15); color: rgba(255,255,255,0.4); }
+    .tlpill.dlvl1 { background: rgba(52,211,153,0.22); color: #6ee7b7; }
+    .tlpill.dlvl2 { background: rgba(234,179,8,0.22); color: #fde68a; }
+    .tlpill.dlvl3 { background: rgba(249,115,22,0.22); color: #fdba74; }
+    .tlpill.dlvl4 { background: rgba(239,68,68,0.22); color: #fca5a5; }
+    .tlpill.dlvl5 { background: rgba(168,85,247,0.25); color: #d8b4fe; }
+
+    .empty-row { text-align: center; color: rgba(255,255,255,0.35); padding: 1.4rem 0; }
+    .col-toggle { margin-bottom: 0.9rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="site-title" href="index.html">Joanne's World</a>
+      <nav class="site-nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="company-screener.html">Screener</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap app-wrap">
+    <a class="back-link" href="index.html">&larr; Back to home</a>
+    <article class="post">
+      <h1>Company Screener</h1>
+      <div class="post-meta">A small research tool, ported from Paul's World</div>
+      <p>Filter a set of well-known companies by sector, size (last reported fiscal-year revenue), and share-price momentum vs. a historical price.</p>
+
+      <div class="app-card-outer">
+        <div class="disclaimer">
+          &#9888;&#65039; Share Price (B), Price Swing (D), and Variance (C) use daily closing prices fetched live from Yahoo Finance's public chart API via a small serverless function on this site &mdash; the same approach the original tool uses. "Last Week/Month/Quarter/2&ndash;4 Qtr Ago" are approximate trading-day lookbacks (&asymp;5&nbsp;/&nbsp;21&nbsp;/&nbsp;63&nbsp;/&nbsp;126&nbsp;/&nbsp;189&nbsp;/&nbsp;252 trading days back), not exact calendar dates. Price Swing (D) is the high&ndash;low swing from (B)'s point through today. Variance (C) compares today's price (A) directly to (B). This is an unofficial data source and can occasionally be slow, rate-limited, or briefly unavailable &mdash; if so, (A), (B), (C), (D) show "&mdash;" rather than a guessed value.
+        </div>
+
+        <div class="card">
+          <h2>Filters</h2>
+          <div class="filt-block">
+            <div class="filt-lbl">Sector</div>
+            <div class="chip-row" id="segmentRow"></div>
+          </div>
+          <div class="filt-block">
+            <div class="filt-lbl">Company Size (by last year's revenue)</div>
+            <div class="chip-row" id="sizeRow"></div>
+          </div>
+          <div class="filt-block">
+            <div class="filt-lbl">Historical Price (B) Period</div>
+            <div class="period-row" id="histRow"></div>
+          </div>
+          <div class="filt-block">
+            <div class="filt-lbl">Price Swing (D) Traffic Light</div>
+            <div class="chip-row" id="dLevelRow"></div>
+          </div>
+          <div class="filt-block">
+            <div class="filt-lbl">Variance (C) Traffic Light</div>
+            <div class="chip-row" id="varLevelRow"></div>
+          </div>
+          <button class="reset-btn" onclick="resetFilters()">Reset all filters</button>
+        </div>
+
+        <div class="card">
+          <h2>Table: IC Coy Screener Results</h2>
+          <button class="chip active col-toggle" id="colBtn" onclick="toggleColumns()">&#128065;&#65039; Hide Company/Sector/Revenue/Size cols</button>
+          <div class="result-count" id="resultCount"></div>
+          <div class="table-scroll">
+            <table class="scr hide-cols" id="scrTable">
+              <thead>
+                <tr>
+                  <th>Symbol</th>
+                  <th class="sc-hide-col">Company</th>
+                  <th class="sc-hide-col">Sector</th>
+                  <th class="num">Share Price (A)</th>
+                  <th class="num" id="histColHead">Share Price (B)</th>
+                  <th class="num" id="moveColHead">Price Swing (D)</th>
+                  <th class="num">Variance (C) (A&minus;B)/B</th>
+                  <th class="num sc-hide-col">Revenue</th>
+                  <th class="sc-hide-col">Size</th>
+                </tr>
+              </thead>
+              <tbody id="scrBody"><tr><td colspan="9" class="empty-row">Loading&hellip;</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      &copy; 2026 Joanne's World
+    </div>
+  </footer>
+
+  <script>
+    var SEGMENTS = ['Semiconductors','Big Tech / Software','E-Commerce & Retail','Consumer Staples','Healthcare','Financials','Energy','Automotive','Industrials','Restaurants/Consumer Discretionary'];
+    var SIZES = ['Micro','Small','Mid','Large','Mega'];
+    var SIZES_SUB = { Micro:'<$1B', Small:'$1B–$10B', Mid:'$10B–$50B', Large:'$50B–$200B', Mega:'>$200B' };
+
+    var COMPANIES = [
+      { sym:'NVDA', name:'NVIDIA Corporation', segment:'Semiconductors', rev:[{l:'FY2024',v:60.9},{l:'FY2025',v:130.5},{l:'FY2026',v:215.9}] },
+      { sym:'AVGO', name:'Broadcom Inc.', segment:'Semiconductors', rev:[{l:'FY2023',v:35.8},{l:'FY2024',v:51.6},{l:'FY2025',v:63.9}] },
+      { sym:'MSFT', name:'Microsoft Corporation', segment:'Big Tech / Software', rev:[{l:'FY2023',v:211.9},{l:'FY2024',v:245.1},{l:'FY2025',v:281.7}] },
+      { sym:'AAPL', name:'Apple Inc.', segment:'Big Tech / Software', rev:[{l:'FY2023',v:383.3},{l:'FY2024',v:391.0},{l:'FY2025',v:416.2}] },
+      { sym:'GOOGL', name:'Alphabet Inc.', segment:'Big Tech / Software', rev:[{l:'FY2023',v:307.4},{l:'FY2024',v:350.0},{l:'FY2025',v:402.8}] },
+      { sym:'AMZN', name:'Amazon.com Inc.', segment:'E-Commerce & Retail', rev:[{l:'FY2023',v:574.8},{l:'FY2024',v:638.0},{l:'FY2025',v:716.9}] },
+      { sym:'WMT', name:'Walmart Inc.', segment:'E-Commerce & Retail', rev:[{l:'FY2023',v:611},{l:'FY2024',v:648},{l:'FY2025',v:681}] },
+      { sym:'BBW', name:'Build-A-Bear Workshop', segment:'E-Commerce & Retail', rev:[{l:'FY2022',v:0.468},{l:'FY2023',v:0.486},{l:'FY2024',v:0.496}] },
+      { sym:'KO', name:'The Coca-Cola Company', segment:'Consumer Staples', rev:[{l:'2023',v:45.8},{l:'2024',v:47.1},{l:'2025',v:47.9}] },
+      { sym:'PEP', name:'PepsiCo Inc.', segment:'Consumer Staples', rev:[{l:'2023',v:91.5},{l:'2024',v:91.9},{l:'2025',v:93.9}] },
+      { sym:'SAM', name:'Boston Beer Company', segment:'Consumer Staples', rev:[{l:'2023',v:2.01},{l:'2024',v:2.01},{l:'2025',v:1.96}] },
+      { sym:'UNH', name:'UnitedHealth Group', segment:'Healthcare', rev:[{l:'2023',v:371.6},{l:'2024',v:400.3},{l:'2025',v:447.6}] },
+      { sym:'JNJ', name:'Johnson & Johnson', segment:'Healthcare', rev:[{l:'2023',v:85.2},{l:'2024',v:88.8},{l:'2025',v:94.2}] },
+      { sym:'JPM', name:'JPMorgan Chase & Co.', segment:'Financials', rev:[{l:'2023',v:162.4},{l:'2024',v:169.4},{l:'2025',v:182.4}] },
+      { sym:'V', name:'Visa Inc.', segment:'Financials', rev:[{l:'FY2023',v:32.7},{l:'FY2024',v:35.9},{l:'FY2025',v:40.0}] },
+      { sym:'MA', name:'Mastercard Inc.', segment:'Financials', rev:[{l:'2023',v:25.1},{l:'2024',v:28.2},{l:'2025',v:32.8}] },
+      { sym:'XOM', name:'Exxon Mobil Corporation', segment:'Energy', rev:[{l:'2023',v:344.6},{l:'2024',v:349.6},{l:'2025',v:332.2}] },
+      { sym:'CVX', name:'Chevron Corporation', segment:'Energy', rev:[{l:'2023',v:196.9},{l:'2024',v:193.4},{l:'2025',v:187.0}] },
+      { sym:'TSLA', name:'Tesla Inc.', segment:'Automotive', rev:[{l:'2023',v:96.8},{l:'2024',v:97.7},{l:'2025',v:94.8}] },
+      { sym:'RIVN', name:'Rivian Automotive', segment:'Automotive', rev:[{l:'2023',v:4.43},{l:'2024',v:4.97},{l:'2025',v:5.39}] },
+      { sym:'BA', name:'The Boeing Company', segment:'Industrials', rev:[{l:'2023',v:77.8},{l:'2024',v:66.5},{l:'2025',v:89.5}] },
+      { sym:'LECO', name:'Lincoln Electric Holdings', segment:'Industrials', rev:[{l:'2023',v:4.19},{l:'2024',v:4.01},{l:'2025',v:4.23}] },
+      { sym:'MCD', name:"McDonald's Corporation", segment:'Restaurants/Consumer Discretionary', rev:[{l:'2023',v:25.5},{l:'2024',v:25.9},{l:'2025',v:26.9}] },
+      { sym:'WING', name:'Wingstop Inc.', segment:'Restaurants/Consumer Discretionary', rev:[{l:'2023',v:0.46},{l:'2024',v:0.63},{l:'2025',v:0.70}] }
+    ];
+
+    function sizeBucket(revB) {
+      if (revB < 1) return 'Micro';
+      if (revB < 10) return 'Small';
+      if (revB < 50) return 'Mid';
+      if (revB < 200) return 'Large';
+      return 'Mega';
+    }
+    COMPANIES.forEach(function (c) {
+      c.lastYrRev = c.rev[c.rev.length - 1].v;
+      c.size = sizeBucket(c.lastYrRev);
+      c.price = null;
+      c.closes = null;
+    });
+
+    // Approximate trading-day lookbacks (not calendar days).
+    var HIST_OPTS = [
+      { days:5, label:'Last Week' },
+      { days:21, label:'Last Month' },
+      { days:63, label:'Last Quarter' },
+      { days:126, label:'2 Qtr Ago' },
+      { days:189, label:'3 Qtr Ago' },
+      { days:252, label:'4 Qtr Ago' }
+    ];
+    // 5-level traffic light for Variance (C) = (A-B)/B — ranges are [min, max).
+    var LEVELS = [
+      { key:'lvl1', min:-Infinity, max:-15, icon:'🔴', label:'Big Drop', rng:'≤ -15%' },
+      { key:'lvl2', min:-15, max:-5, icon:'🟠', label:'Drop', rng:'-15% ~ -5%' },
+      { key:'lvl3', min:-5, max:5, icon:'🟡', label:'Flat', rng:'-5% ~ +5%' },
+      { key:'lvl4', min:5, max:15, icon:'🟢', label:'Gain', rng:'+5% ~ +15%' },
+      { key:'lvl5', min:15, max:Infinity, icon:'💚', label:'Big Gain', rng:'≥ +15%' }
+    ];
+    function trafficLevel(variance) {
+      for (var i = 0; i < LEVELS.length; i++) {
+        if (variance >= LEVELS[i].min && variance < LEVELS[i].max) return LEVELS[i];
+      }
+      return LEVELS[LEVELS.length - 1];
+    }
+    // 5-level traffic light for Price Swing (D) — magnitude scale (calm -> extreme).
+    var DLEVELS = [
+      { key:'dlvl1', min:0, max:5, icon:'🟢', label:'Low Swing', rng:'< 5%' },
+      { key:'dlvl2', min:5, max:10, icon:'🟡', label:'Moderate Swing', rng:'5% ~ 10%' },
+      { key:'dlvl3', min:10, max:20, icon:'🟠', label:'Elevated Swing', rng:'10% ~ 20%' },
+      { key:'dlvl4', min:20, max:35, icon:'🔴', label:'High Swing', rng:'20% ~ 35%' },
+      { key:'dlvl5', min:35, max:Infinity, icon:'🟣', label:'Extreme Swing', rng:'≥ 35%' }
+    ];
+    function dTrafficLevel(movement) {
+      for (var i = 0; i < DLEVELS.length; i++) {
+        if (movement >= DLEVELS[i].min && movement < DLEVELS[i].max) return DLEVELS[i];
+      }
+      return DLEVELS[DLEVELS.length - 1];
+    }
+
+    var DEFAULT_HIST_PERIOD = 1; // Last Month
+    var DEFAULT_VAR_LEVELS = ['lvl3'];
+    var DEFAULT_D_LEVELS = ['dlvl1', 'dlvl2'];
+    var state = {
+      histPeriod: DEFAULT_HIST_PERIOD,
+      segments: new Set(SEGMENTS),
+      sizes: new Set(SIZES),
+      varLevels: new Set(DEFAULT_VAR_LEVELS),
+      dLevels: new Set(DEFAULT_D_LEVELS)
+    };
+
+    function buildSegmentRow() {
+      var row = document.getElementById('segmentRow');
+      row.innerHTML = '';
+      SEGMENTS.forEach(function (seg) {
+        var chip = document.createElement('button');
+        chip.className = 'chip' + (state.segments.has(seg) ? ' active' : '');
+        chip.textContent = seg;
+        chip.onclick = function () {
+          if (state.segments.has(seg)) state.segments.delete(seg); else state.segments.add(seg);
+          buildSegmentRow(); render();
+        };
+        row.appendChild(chip);
+      });
+    }
+
+    function buildSizeRow() {
+      var row = document.getElementById('sizeRow');
+      row.innerHTML = '';
+      SIZES.forEach(function (sz) {
+        var chip = document.createElement('button');
+        chip.className = 'chip' + (state.sizes.has(sz) ? ' active' : '');
+        chip.textContent = sz + ' ' + SIZES_SUB[sz];
+        chip.onclick = function () {
+          if (state.sizes.has(sz)) state.sizes.delete(sz); else state.sizes.add(sz);
+          buildSizeRow(); render();
+        };
+        row.appendChild(chip);
+      });
+    }
+
+    function buildHistRow() {
+      var row = document.getElementById('histRow');
+      row.innerHTML = '';
+      HIST_OPTS.forEach(function (h, i) {
+        var btn = document.createElement('button');
+        btn.className = 'period-btn' + (state.histPeriod === i ? ' active' : '');
+        btn.textContent = h.label;
+        btn.onclick = function () { state.histPeriod = i; buildHistRow(); render(); };
+        row.appendChild(btn);
+      });
+    }
+
+    function buildVarLevelRow() {
+      var row = document.getElementById('varLevelRow');
+      row.innerHTML = '';
+      LEVELS.forEach(function (L) {
+        var chip = document.createElement('button');
+        chip.className = 'chip ' + L.key + (state.varLevels.has(L.key) ? ' active' : '');
+        chip.textContent = L.icon + ' ' + L.label + ' ' + L.rng;
+        chip.onclick = function () {
+          if (state.varLevels.has(L.key)) state.varLevels.delete(L.key); else state.varLevels.add(L.key);
+          buildVarLevelRow(); render();
+        };
+        row.appendChild(chip);
+      });
+    }
+
+    function buildDLevelRow() {
+      var row = document.getElementById('dLevelRow');
+      row.innerHTML = '';
+      DLEVELS.forEach(function (L) {
+        var chip = document.createElement('button');
+        chip.className = 'chip ' + L.key + (state.dLevels.has(L.key) ? ' active' : '');
+        chip.textContent = L.icon + ' ' + L.label + ' ' + L.rng;
+        chip.onclick = function () {
+          if (state.dLevels.has(L.key)) state.dLevels.delete(L.key); else state.dLevels.add(L.key);
+          buildDLevelRow(); render();
+        };
+        row.appendChild(chip);
+      });
+    }
+
+    function resetFilters() {
+      state.histPeriod = DEFAULT_HIST_PERIOD;
+      state.segments = new Set(SEGMENTS);
+      state.sizes = new Set(SIZES);
+      state.varLevels = new Set(DEFAULT_VAR_LEVELS);
+      state.dLevels = new Set(DEFAULT_D_LEVELS);
+      buildSegmentRow(); buildSizeRow(); buildHistRow(); buildVarLevelRow(); buildDLevelRow();
+      setColumns(true);
+      render();
+    }
+
+    function setColumns(hidden) {
+      var t = document.getElementById('scrTable');
+      var btn = document.getElementById('colBtn');
+      t.classList.toggle('hide-cols', hidden);
+      btn.classList.toggle('active', hidden);
+    }
+    function toggleColumns() {
+      var t = document.getElementById('scrTable');
+      setColumns(!t.classList.contains('hide-cols'));
+    }
+
+    function fmtRev(v) { return '$' + v.toFixed(v < 1 ? 3 : 1) + 'B'; }
+    function fmtPrice(p) { return p === null ? '—' : '$' + p.toFixed(2); }
+    function fmtVariance(v) { return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; }
+    function fmtSwing(v) { return v.toFixed(1) + '%'; }
+
+    function histFor(c) {
+      var histOpt = HIST_OPTS[state.histPeriod];
+      if (!c.closes || c.price === null) return { priceB:null, variance:null, level:null };
+      var idx = c.closes.length - 1 - histOpt.days;
+      if (idx < 0) return { priceB:null, variance:null, level:null };
+      var priceB = c.closes[idx];
+      if (typeof priceB !== 'number' || priceB <= 0) return { priceB:null, variance:null, level:null };
+      var variance = (c.price - priceB) / priceB * 100;
+      return { priceB:priceB, variance:variance, level:trafficLevel(variance) };
+    }
+
+    function swingFor(c) {
+      var histOpt = HIST_OPTS[state.histPeriod];
+      if (!c.closes) return { high:null, low:null, movement:null, level:null };
+      var startIdx = c.closes.length - 1 - histOpt.days;
+      if (startIdx < 0) return { high:null, low:null, movement:null, level:null };
+      var win = c.closes.slice(startIdx).filter(function (v) { return typeof v === 'number'; });
+      if (!win.length) return { high:null, low:null, movement:null, level:null };
+      var high = Math.max.apply(null, win);
+      var low = Math.min.apply(null, win);
+      if (high <= 0) return { high:null, low:null, movement:null, level:null };
+      var movement = (high - low) / high * 100;
+      return { high:high, low:low, movement:movement, level:dTrafficLevel(movement) };
+    }
+
+    function render() {
+      var histOpt = HIST_OPTS[state.histPeriod];
+      document.getElementById('histColHead').textContent = 'Share Price (B) — ' + histOpt.label;
+      document.getElementById('moveColHead').textContent = 'Price Swing (D) — ' + histOpt.label + ' to Now';
+
+      var rows = COMPANIES.filter(function (c) {
+        if (!state.segments.has(c.segment)) return false;
+        if (!state.sizes.has(c.size)) return false;
+        var h = histFor(c);
+        if (h.level !== null && !state.varLevels.has(h.level.key)) return false;
+        var m = swingFor(c);
+        if (m.level !== null && !state.dLevels.has(m.level.key)) return false;
+        return true;
+      });
+
+      document.getElementById('resultCount').textContent =
+        'Showing ' + rows.length + ' of ' + COMPANIES.length + ' companies';
+
+      var tbody = document.getElementById('scrBody');
+      if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="empty-row">No companies match these filters</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = rows.map(function (c) {
+        var revEntry = c.rev[c.rev.length - 1];
+        var h = histFor(c);
+        var bCell = h.priceB === null ? '—' : fmtPrice(h.priceB);
+        var cCell = h.level === null
+          ? '<span class="tlpill lvlna">— No data</span>'
+          : '<span class="tlpill ' + h.level.key + '">' + h.level.icon + ' ' + fmtVariance(h.variance) + '</span>';
+        var m = swingFor(c);
+        var dCell = m.level === null
+          ? '<span class="tlpill lvlna">— No data</span>'
+          : '<span class="tlpill ' + m.level.key + '">' + m.level.icon + ' ' + fmtSwing(m.movement) + '</span>';
+
+        return '<tr>' +
+          '<td class="sym">' + c.sym + '</td>' +
+          '<td class="sc-hide-col">' + c.name + '</td>' +
+          '<td class="sc-hide-col">' + c.segment + '</td>' +
+          '<td class="num">' + fmtPrice(c.price) + '</td>' +
+          '<td class="num">' + bCell + '</td>' +
+          '<td class="num">' + dCell + '</td>' +
+          '<td class="num">' + cCell + '</td>' +
+          '<td class="num sc-hide-col">' + fmtRev(revEntry.v) + '<span class="fy">' + revEntry.l + '</span></td>' +
+          '<td class="sc-hide-col"><span class="sizepill ' + c.size + '">' + c.size + '</span></td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function loadQuotes() {
+      var symbols = COMPANIES.map(function (c) { return c.sym; });
+      fetch('/api/quote?symbols=' + encodeURIComponent(symbols.join(',')))
+        .then(function (r) { if (!r.ok) throw new Error('bad'); return r.json(); })
+        .then(function (data) {
+          COMPANIES.forEach(function (c) {
+            var q = data[c.sym];
+            if (q && typeof q.price === 'number') c.price = q.price;
+            if (q && Array.isArray(q.closes) && q.closes.length) c.closes = q.closes;
+          });
+          render();
+        })
+        .catch(function () { /* keep last known data; columns show "—" on first failed load */ });
+    }
+
+    function isUSMarketHours() {
+      var now = new Date();
+      var parts = new Intl.DateTimeFormat('en-US', { timeZone:'America/New_York', hour12:false, weekday:'short', hour:'2-digit', minute:'2-digit' }).formatToParts(now);
+      var map = {}; parts.forEach(function (p) { map[p.type] = p.value; });
+      if (map.weekday === 'Sat' || map.weekday === 'Sun') return false;
+      var mins = parseInt(map.hour, 10) * 60 + parseInt(map.minute, 10);
+      return mins >= (9 * 60 + 30) && mins < (16 * 60);
+    }
+    function scheduleRefresh() {
+      loadQuotes();
+      setTimeout(scheduleRefresh, isUSMarketHours() ? 60000 : 300000);
+    }
+
+    buildSegmentRow();
+    buildSizeRow();
+    buildHistRow();
+    buildVarLevelRow();
+    buildDLevelRow();
+    render();
+    scheduleRefresh();
+  </script>
+</body>
+</html>
