@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Travel Tracker &mdash; Joanne's World</title>
+  <meta name="description" content="Keep trips, stays, costs, cash and insurance in one place, with automatic totals and cancellation reminders.">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    :root { --ok: #2f7d4f; --warn: #b36b00; --bad: #b3261e; --card: #f6f2ee; }
+    @media (prefers-color-scheme: dark) {
+      :root { --ok: #7fcf9a; --warn: #f0b35a; --bad: #f08a80; --card: #221f24; }
+    }
+    .app-wrap { max-width: 860px; }
+    body { font-size: 1.05rem; }
+    h1 { font-size: 1.8rem; margin: 0 0 0.3rem; }
+    h2 { font-size: 1.3rem; margin: 2.2rem 0 0.8rem; display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+    .lead { color: var(--muted); margin: 0 0 1.2rem; }
+    .privacy { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem; font-size: 0.92rem; color: var(--muted); }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 1.2rem 0; }
+    button, select, input, textarea { font: inherit; }
+    .btn { background: var(--accent); color: #fff; border: 0; border-radius: 10px; padding: 0.55rem 1rem; cursor: pointer; font-size: 0.98rem; }
+    .btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+    .btn.small { padding: 0.3rem 0.7rem; font-size: 0.88rem; }
+    select.trip-pick { padding: 0.5rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--fg); font-size: 1rem; max-width: 100%; }
+    .cards { display: grid; gap: 0.8rem; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem 1rem; overflow-wrap: anywhere; }
+    .card .top { display: flex; justify-content: space-between; gap: 0.6rem; align-items: baseline; flex-wrap: wrap; }
+    .card .title { font-weight: 700; font-size: 1.08rem; }
+    .card .sub { color: var(--muted); font-size: 0.93rem; }
+    .card .notes { white-space: pre-wrap; font-size: 0.93rem; margin-top: 0.4rem; }
+    .card .actions { margin-top: 0.5rem; display: flex; gap: 0.4rem; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.7rem; }
+    .stat { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem; }
+    .stat .v { font-size: 1.35rem; font-weight: 700; }
+    .stat .k { color: var(--muted); font-size: 0.85rem; }
+    .pill { display: inline-block; border-radius: 999px; padding: 0.1rem 0.6rem; font-size: 0.82rem; font-weight: 600; border: 1px solid currentColor; }
+    .ok { color: var(--ok); } .warn { color: var(--warn); } .bad { color: var(--bad); } .muted { color: var(--muted); }
+    .alert { border-left: 4px solid var(--warn); }
+    .alert.bad { border-left-color: var(--bad); color: inherit; }
+    table.sum { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    table.sum td, table.sum th { text-align: left; padding: 0.4rem 0.5rem 0.4rem 0; border-bottom: 1px solid var(--border); }
+    table.sum td.n, table.sum th.n { text-align: right; white-space: nowrap; }
+    .empty { color: var(--muted); font-style: italic; }
+    dialog { border: 1px solid var(--border); border-radius: 14px; background: var(--bg); color: var(--fg); width: min(560px, calc(100vw - 32px)); padding: 1.2rem; }
+    dialog::backdrop { background: rgba(0,0,0,0.45); }
+    dialog label { display: block; font-size: 0.9rem; color: var(--muted); margin: 0.7rem 0 0.2rem; }
+    dialog input, dialog select, dialog textarea { width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--fg); }
+    dialog textarea { min-height: 5rem; }
+    dialog .row { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
+    .rates { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .rates label { font-size: 0.88rem; color: var(--muted); }
+    .rates input { width: 6rem; padding: 0.3rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--fg); }
+    @media print { .toolbar, .actions, h2 .btn, .privacy, header, footer, #backup { display: none !important; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap app-wrap">
+      <a class="site-title" href="index.html">Joanne's World</a>
+      <nav class="site-nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About me</a>
+        <a href="company-screener.html">Screener</a>
+        <a href="travel.html">Travel</a>
+        <a href="https://paulsworld.vercel.app">Paulsworld</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap app-wrap">
+    <h1>Travel Tracker</h1>
+    <p class="lead">Trips, stays, costs, cash and insurance in one place. Nights, cost per night, totals and cancellation deadlines are worked out for you.</p>
+    <p class="privacy">🔒 Everything you type here is saved <strong>only in this browser on this device</strong>. Nothing is sent to the website. Use <strong>Export backup</strong> to keep a copy or to move it to another phone or computer.</p>
+
+    <div class="toolbar">
+      <select id="tripPick" class="trip-pick" aria-label="Choose trip"></select>
+      <button class="btn" data-add="trips">+ Trip</button>
+      <button class="btn ghost" id="copyText">Copy as text</button>
+      <button class="btn ghost" onclick="window.print()">Print</button>
+    </div>
+
+    <div id="overview"></div>
+
+    <h2>⏰ Deadlines &amp; alerts</h2>
+    <div id="alerts" class="cards"></div>
+
+    <h2>🏨 Stays <button class="btn small" data-add="stays">+ Stay</button></h2>
+    <div id="stays" class="cards"></div>
+
+    <h2>💳 Costs <button class="btn small" data-add="expenses">+ Cost</button></h2>
+    <div id="costSummary"></div>
+    <div id="expenses" class="cards" style="margin-top:0.8rem"></div>
+
+    <h2>💵 Cash &amp; travel cards <button class="btn small" data-add="cash">+ Cash</button></h2>
+    <div id="cash" class="cards"></div>
+
+    <h2>🛡️ Insurance &amp; documents <button class="btn small" data-add="policies">+ Add</button></h2>
+    <div id="policies" class="cards"></div>
+
+    <h2>💱 Exchange rates (1 unit = S$)</h2>
+    <div id="rates" class="rates"></div>
+
+    <h2 id="backup">💾 Backup</h2>
+    <div class="toolbar">
+      <button class="btn" id="exportBtn">Export backup</button>
+      <label class="btn ghost" style="display:inline-block">Import backup<input type="file" id="importFile" accept=".json,application/json" hidden></label>
+      <button class="btn ghost" id="clearBtn">Clear all</button>
+    </div>
+  </main>
+
+  <dialog id="editor">
+    <form method="dialog" id="editorForm">
+      <h3 id="editorTitle" style="margin:0"></h3>
+      <div id="editorFields"></div>
+      <div class="row">
+        <button class="btn ghost" value="cancel" formnovalidate>Cancel</button>
+        <button class="btn" value="save">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <footer class="site-footer">
+    <div class="wrap app-wrap">&copy; 2026 Joanne's World</div>
+  </footer>
+
+  <script>
+  (function () {
+    var KEY = 'joanne-travel-v1';
+    var CURRENCIES = ['SGD', 'AUD', 'NZD', 'USD', 'CNY', 'JPY', 'EUR', 'GBP'];
+    var SYMBOL = { SGD: 'S$', AUD: 'A$', NZD: 'NZ$', USD: 'US$', CNY: 'CN¥', JPY: '¥', EUR: '€', GBP: '£' };
+    var DEFAULT_RATES = { SGD: 1, AUD: 0.85, NZD: 0.75, USD: 1.30, CNY: 0.18, JPY: 0.0088, EUR: 1.45, GBP: 1.72 };
+    var STATUSES = ['Paid', 'To pay', 'To refund', 'Refunded'];
+
+    var SCHEMA = {
+      trips: { title: 'Trip', fields: [
+        ['name', 'Trip name', 'text'], ['start', 'Start date', 'date'], ['end', 'End date', 'date'],
+        ['notes', 'Notes (flights, miles, places to see, passcodes)', 'textarea']] },
+      stays: { title: 'Stay', fields: [
+        ['trip', 'Trip', 'trip'], ['place', 'City / area', 'text'], ['name', 'Property name / room', 'text'],
+        ['checkin', 'Check-in date', 'date'], ['checkout', 'Check-out date', 'date'],
+        ['platform', 'Booked via (Airbnb, Trip.com…)', 'text'], ['cost', 'Total cost (S$)', 'number'],
+        ['payment', 'Paid with / statement month', 'text'], ['bookedOn', 'Booked on', 'date'],
+        ['cancelBy', 'Free cancellation before', 'date'], ['cancelNote', 'Cancellation note (e.g. 3pm local)', 'text'],
+        ['address', 'Address', 'text'], ['host', 'Host / phone', 'text'],
+        ['notes', 'Notes (lockbox code, things to see)', 'textarea']] },
+      expenses: { title: 'Cost', fields: [
+        ['trip', 'Trip', 'trip'], ['date', 'Date', 'date'], ['item', 'What for', 'text'],
+        ['amount', 'Amount', 'number'], ['currency', 'Currency', 'currency'],
+        ['paidBy', 'Paid by / card', 'text'], ['statement', 'Statement month', 'text'],
+        ['status', 'Status', 'status']] },
+      cash: { title: 'Cash / travel card', fields: [
+        ['trip', 'Trip', 'trip'], ['amount', 'Amount', 'number'], ['currency', 'Currency', 'currency'],
+        ['note', 'Where / note (cash, YouTrip, rate)', 'text']] },
+      policies: { title: 'Insurance / document', fields: [
+        ['who', 'For whom', 'text'], ['kind', 'Type (travel insurance, visa…)', 'text'], ['provider', 'Provider', 'text'],
+        ['ref', 'Policy / reference no.', 'text'], ['start', 'Valid from', 'date'], ['end', 'Valid until', 'date'],
+        ['cost', 'Cost (S$)', 'number'], ['phone', 'Emergency phone', 'text'], ['notes', 'Notes', 'textarea']] }
+    };
+
+    function blank() { return { trips: [], stays: [], expenses: [], cash: [], policies: [], rates: Object.assign({}, DEFAULT_RATES) }; }
+    function normalise(d) {
+      var b = blank();
+      Object.keys(SCHEMA).forEach(function (k) { if (Array.isArray(d[k])) b[k] = d[k]; });
+      b.rates = Object.assign({}, DEFAULT_RATES, d.rates || {});
+      if (d.selectedTrip) b.selectedTrip = d.selectedTrip;
+      return b;
+    }
+    function load() {
+      try { var raw = localStorage.getItem(KEY); if (raw) return normalise(JSON.parse(raw)); } catch (e) {}
+      return blank();
+    }
+    var db = load();
+    function save() {
+      try { localStorage.setItem(KEY, JSON.stringify(db)); }
+      catch (e) { alert('Could not save on this device. Please use Export backup so nothing is lost.'); }
+      render();
+    }
+
+    // ---------- helpers ----------
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+    function parseDate(s) { if (!s) return null; var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+    function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+    function today() { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+    function days(a, b) { return Math.round((b - a) / 86400000); }
+    var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    function fmtDate(s) { var d = parseDate(s); return d ? d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear() : ''; }
+    function fmtShort(s) { var d = parseDate(s); return d ? d.getDate() + ' ' + MONTHS[d.getMonth()] : ''; }
+    function num(v) { var n = parseFloat(v); return isNaN(n) ? 0 : n; }
+    function money(v, cur) { return (SYMBOL[cur || 'SGD'] || cur + ' ') + num(v).toLocaleString('en-SG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function toSGD(v, cur) { return num(v) * num(db.rates[cur || 'SGD'] || 0); }
+    function nights(s) { var a = parseDate(s.checkin), b = parseDate(s.checkout); return a && b ? Math.max(0, days(a, b)) : 0; }
+    function inTrip(x) { return !db.selectedTrip || x.trip === db.selectedTrip; }
+    function byDate(field) { return function (a, b) { return String(a[field] || '9999').localeCompare(String(b[field] || '9999')); }; }
+    function countdown(n) {
+      if (n < 0) return (-n) + ' day' + (n === -1 ? '' : 's') + ' ago';
+      if (n === 0) return 'today';
+      if (n === 1) return 'tomorrow';
+      return 'in ' + n + ' days';
+    }
+
+    // ---------- rendering ----------
+    function renderTripPick() {
+      var sel = document.getElementById('tripPick');
+      var opts = '<option value="">All trips</option>' + db.trips.slice().sort(byDate('start')).map(function (t) {
+        return '<option value="' + esc(t.id) + '"' + (t.id === db.selectedTrip ? ' selected' : '') + '>' + esc(t.name) + '</option>';
+      }).join('');
+      sel.innerHTML = opts;
+      if (db.selectedTrip && !db.trips.some(function (t) { return t.id === db.selectedTrip; })) { db.selectedTrip = ''; sel.value = ''; }
+    }
+
+    function tripName(id) { var t = db.trips.find(function (x) { return x.id === id; }); return t ? t.name : ''; }
+
+    function renderOverview() {
+      var el = document.getElementById('overview');
+      var trips = db.trips.filter(function (t) { return !db.selectedTrip || t.id === db.selectedTrip; }).sort(byDate('start'));
+      if (!db.trips.length) {
+        el.innerHTML = '<p class="empty">No trips yet. Tap “+ Trip” to start, or use Import backup at the bottom of the page.</p>';
+        return;
+      }
+      var t0 = today();
+      el.innerHTML = trips.map(function (t) {
+        var s = parseDate(t.start), e = parseDate(t.end);
+        var status = '';
+        if (s && e) {
+          var total = days(s, e);
+          if (t0 < s) status = '<span class="pill warn">Starts ' + countdown(days(t0, s)) + '</span>';
+          else if (t0 > e) status = '<span class="pill muted">Finished</span>';
+          else status = '<span class="pill ok">Day ' + (days(s, t0) + 1) + ' of ' + (total + 1) + '</span>';
+        }
+        var stays = db.stays.filter(function (x) { return x.trip === t.id; }).sort(byDate('checkin'));
+        var tonight = stays.find(function (x) { var a = parseDate(x.checkin), b = parseDate(x.checkout); return a && b && t0 >= a && t0 < b; });
+        var next = stays.find(function (x) { var a = parseDate(x.checkin); return a && a > t0; });
+        var n = stays.reduce(function (sum, x) { return sum + nights(x); }, 0);
+        var lines = [];
+        if (tonight) lines.push('🛏️ Tonight: <strong>' + esc(tonight.place) + '</strong> — ' + esc(tonight.name));
+        if (next) lines.push('➡️ Next: ' + esc(next.place) + ' check-in ' + fmtShort(next.checkin) + ' (' + countdown(days(t0, parseDate(next.checkin))) + ')');
+        return '<div class="card"><div class="top"><span class="title">' + esc(t.name) + '</span>' + status + '</div>' +
+          '<div class="sub">' + fmtDate(t.start) + (t.end ? ' → ' + fmtDate(t.end) : '') +
+          (s && e ? ' · ' + days(s, e) + ' nights' : '') + (stays.length ? ' · ' + n + ' nights booked in ' + stays.length + ' stays' : '') + '</div>' +
+          (lines.length ? '<div style="margin-top:0.4rem">' + lines.join('<br>') + '</div>' : '') +
+          (t.notes ? '<div class="notes">' + esc(t.notes) + '</div>' : '') +
+          actions('trips', t.id) + '</div>';
+      }).join('');
+    }
+
+    function collectAlerts() {
+      var t0 = today(), out = [];
+      db.stays.filter(inTrip).forEach(function (s) {
+        var c = parseDate(s.cancelBy), ci = parseDate(s.checkin);
+        if (c && ci && t0 < ci) {
+          var n = days(t0, c);
+          if (n >= 0) out.push({ date: s.cancelBy, level: n <= 7 ? 'bad' : 'warn',
+            text: 'Free cancellation for <strong>' + esc(s.place) + '</strong> ends ' + fmtDate(s.cancelBy) + ' (' + countdown(n) + ')' + (s.cancelNote ? ' — ' + esc(s.cancelNote) : '') });
+          else out.push({ date: s.cancelBy, level: 'muted', text: esc(s.place) + ': free cancellation period ended ' + fmtDate(s.cancelBy) + ' — booking is now fixed.' });
+        }
+        if (ci) {
+          var m = days(t0, ci);
+          if (m >= 0 && m <= 3) out.push({ date: s.checkin, level: 'warn', text: 'Check-in at <strong>' + esc(s.place) + '</strong> ' + countdown(m) + (s.address ? ' — ' + esc(s.address) : '') });
+        }
+      });
+      // gaps: nights inside a trip with no stay booked
+      db.trips.filter(function (t) { return !db.selectedTrip || t.id === db.selectedTrip; }).forEach(function (t) {
+        var s = parseDate(t.start), e = parseDate(t.end);
+        var stays = db.stays.filter(function (x) { return x.trip === t.id && x.checkin && x.checkout; });
+        if (!s || !e || !stays.length) return;
+        var missing = [];
+        for (var d = new Date(s); d < e; d.setDate(d.getDate() + 1)) {
+          var covered = stays.some(function (x) { return d >= parseDate(x.checkin) && d < parseDate(x.checkout); });
+          if (!covered) missing.push(iso(d));
+        }
+        if (missing.length) out.push({ date: missing[0], level: 'warn',
+          text: esc(t.name) + ': no stay recorded for the night of ' + missing.map(fmtShort).join(', ') + ' (fine if it is a flight or with family).' });
+      });
+      db.policies.forEach(function (p) {
+        var e = parseDate(p.end);
+        if (!e) return;
+        var n = days(t0, e);
+        if (n < 0) out.push({ date: p.end, level: 'bad', text: esc(p.who) + ' — ' + esc(p.kind || p.provider) + ' expired ' + fmtDate(p.end) });
+        else if (n <= 60) out.push({ date: p.end, level: 'warn', text: esc(p.who) + ' — ' + esc(p.kind || p.provider) + ' expires ' + fmtDate(p.end) + ' (' + countdown(n) + ')' });
+        db.trips.forEach(function (t) {
+          var te = parseDate(t.end);
+          if ((!db.selectedTrip || t.id === db.selectedTrip) && te && te > e && days(t0, te) >= 0 && parseDate(t.start) <= te)
+            out.push({ date: p.end, level: 'bad', text: esc(p.who) + '’s ' + esc(p.kind || 'cover') + ' ends ' + fmtDate(p.end) + ', before “' + esc(t.name) + '” finishes on ' + fmtDate(t.end) });
+        });
+      });
+      db.expenses.filter(inTrip).forEach(function (x) {
+        if (x.status === 'To refund') out.push({ date: x.date || '0', level: 'warn', text: 'Waiting for refund: ' + esc(x.item) + ' ' + money(x.amount, x.currency) });
+        if (x.status === 'To pay') out.push({ date: x.date || '0', level: 'warn', text: 'Still to pay: ' + esc(x.item) + ' ' + money(x.amount, x.currency) });
+      });
+      return out.sort(byDate('date'));
+    }
+
+    function renderAlerts() {
+      var list = collectAlerts();
+      var order = { bad: 0, warn: 1, muted: 2 };
+      list.sort(function (a, b) { return order[a.level] - order[b.level] || String(a.date).localeCompare(String(b.date)); });
+      document.getElementById('alerts').innerHTML = list.length
+        ? list.map(function (a) { return '<div class="card alert ' + (a.level === 'bad' ? 'bad' : '') + '"><span class="' + a.level + '">' + (a.level === 'muted' ? '✔︎ ' : '⚠️ ') + '</span>' + a.text + '</div>'; }).join('')
+        : '<p class="empty">Nothing needs attention.</p>';
+    }
+
+    function actions(type, id) {
+      return '<div class="actions"><button class="btn small ghost" data-edit="' + type + '" data-id="' + esc(id) + '">Edit</button>' +
+        '<button class="btn small ghost" data-del="' + type + '" data-id="' + esc(id) + '">Delete</button></div>';
+    }
+
+    function renderStays() {
+      var t0 = today();
+      var list = db.stays.filter(inTrip).sort(byDate('checkin'));
+      document.getElementById('stays').innerHTML = list.length ? list.map(function (s) {
+        var n = nights(s), a = parseDate(s.checkin), b = parseDate(s.checkout);
+        var tag = '';
+        if (a && b) {
+          if (t0 >= a && t0 < b) tag = '<span class="pill ok">Staying now</span>';
+          else if (t0 >= b) tag = '<span class="pill muted">Done</span>';
+          else tag = '<span class="pill warn">' + countdown(days(t0, a)) + '</span>';
+        }
+        var cancel = '';
+        if (s.cancelBy) {
+          var cn = days(t0, parseDate(s.cancelBy));
+          cancel = '<div class="sub">Free cancellation before ' + fmtDate(s.cancelBy) + (s.cancelNote ? ' (' + esc(s.cancelNote) + ')' : '') +
+            (a && t0 < a ? (cn >= 0 ? ' — <span class="' + (cn <= 7 ? 'bad' : 'warn') + '">' + countdown(cn) + '</span>' : ' — <span class="muted">passed</span>') : '') + '</div>';
+        }
+        return '<div class="card"><div class="top"><span class="title">' + esc(s.place) + '</span>' + tag + '</div>' +
+          '<div>' + esc(s.name) + '</div>' +
+          '<div class="sub">' + fmtShort(s.checkin) + ' → ' + fmtShort(s.checkout) + ' · <strong>' + n + 'N</strong>' +
+          (s.platform ? ' · ' + esc(s.platform) : '') + (s.bookedOn ? ' · booked ' + fmtShort(s.bookedOn) : '') + '</div>' +
+          (num(s.cost) ? '<div class="sub">' + money(s.cost) + (n ? ' · ' + money(num(s.cost) / n) + ' per night' : '') + (s.payment ? ' · ' + esc(s.payment) : '') + '</div>' : '') +
+          cancel +
+          (s.address ? '<div class="sub">📍 <a href="https://maps.google.com/?q=' + encodeURIComponent(s.address) + '" target="_blank" rel="noopener">' + esc(s.address) + '</a></div>' : '') +
+          (s.host ? '<div class="sub">👤 ' + esc(s.host) + '</div>' : '') +
+          (s.notes ? '<div class="notes">' + esc(s.notes) + '</div>' : '') +
+          (db.selectedTrip ? '' : '<div class="sub">' + esc(tripName(s.trip)) + '</div>') +
+          actions('stays', s.id) + '</div>';
+      }).join('') : '<p class="empty">No stays yet.</p>';
+    }
+
+    function counts(x) { return x.status !== 'Refunded' && x.status !== 'To refund'; }
+
+    function renderCosts() {
+      var stays = db.stays.filter(inTrip), exps = db.expenses.filter(inTrip);
+      var staySGD = stays.reduce(function (s, x) { return s + num(x.cost); }, 0);
+      var byCur = {};
+      exps.filter(counts).forEach(function (x) { var c = x.currency || 'SGD'; byCur[c] = (byCur[c] || 0) + num(x.amount); });
+      var otherSGD = Object.keys(byCur).reduce(function (s, c) { return s + toSGD(byCur[c], c); }, 0);
+      var refundSGD = exps.filter(function (x) { return x.status === 'To refund'; }).reduce(function (s, x) { return s + toSGD(x.amount, x.currency); }, 0);
+      var n = stays.reduce(function (s, x) { return s + nights(x); }, 0);
+      var rows = Object.keys(byCur).sort().map(function (c) {
+        return '<tr><td>Other costs in ' + c + '</td><td class="n">' + money(byCur[c], c) + '</td><td class="n">' + money(toSGD(byCur[c], c)) + '</td></tr>';
+      }).join('');
+      document.getElementById('costSummary').innerHTML =
+        '<div class="stats">' +
+          '<div class="stat"><div class="v">' + money(staySGD + otherSGD) + '</div><div class="k">Total spent (approx. S$)</div></div>' +
+          '<div class="stat"><div class="v">' + money(staySGD) + '</div><div class="k">Stays · ' + n + ' nights' + (n ? ' · avg ' + money(staySGD / n) + '/night' : '') + '</div></div>' +
+          '<div class="stat"><div class="v">' + money(otherSGD) + '</div><div class="k">Flights, transport &amp; other</div></div>' +
+          (refundSGD ? '<div class="stat"><div class="v warn">' + money(refundSGD) + '</div><div class="k">Refunds still to come</div></div>' : '') +
+        '</div>' +
+        (rows ? '<table class="sum" style="margin-top:0.8rem"><tr><th>By currency</th><th class="n">Amount</th><th class="n">≈ S$</th></tr>' +
+          '<tr><td>Stays</td><td class="n">' + money(staySGD) + '</td><td class="n">' + money(staySGD) + '</td></tr>' + rows + '</table>' : '');
+
+      var list = exps.slice().sort(byDate('date'));
+      document.getElementById('expenses').innerHTML = list.length ? list.map(function (x) {
+        var cls = x.status === 'Paid' || !x.status ? 'ok' : x.status === 'Refunded' ? 'muted' : 'warn';
+        return '<div class="card"><div class="top"><span class="title">' + esc(x.item) + '</span><span><strong>' + money(x.amount, x.currency) + '</strong>' +
+          (x.currency && x.currency !== 'SGD' ? ' <span class="muted">≈ ' + money(toSGD(x.amount, x.currency)) + '</span>' : '') + '</span></div>' +
+          '<div class="sub">' + (x.date ? fmtDate(x.date) + ' · ' : '') + '<span class="' + cls + '">' + esc(x.status || 'Paid') + '</span>' +
+          (x.paidBy ? ' · ' + esc(x.paidBy) : '') + (x.statement ? ' · ' + esc(x.statement) + ' statement' : '') +
+          (db.selectedTrip ? '' : ' · ' + esc(tripName(x.trip))) + '</div>' +
+          actions('expenses', x.id) + '</div>';
+      }).join('') : '<p class="empty">No costs yet. Stay costs are counted automatically — add flights, car rental, Ubers, tours here.</p>';
+    }
+
+    function renderCash() {
+      var list = db.cash.filter(inTrip);
+      var byCur = {};
+      list.forEach(function (x) { byCur[x.currency] = (byCur[x.currency] || 0) + num(x.amount); });
+      var totals = Object.keys(byCur).map(function (c) { return money(byCur[c], c); }).join(' · ');
+      document.getElementById('cash').innerHTML = list.length
+        ? '<div class="card"><strong>Total brought:</strong> ' + totals + '</div>' + list.map(function (x) {
+            return '<div class="card"><div class="top"><span class="title">' + money(x.amount, x.currency) + '</span><span class="muted">≈ ' + money(toSGD(x.amount, x.currency)) + '</span></div>' +
+              (x.note ? '<div class="sub">' + esc(x.note) + '</div>' : '') + actions('cash', x.id) + '</div>';
+          }).join('')
+        : '<p class="empty">No cash recorded.</p>';
+    }
+
+    function renderPolicies() {
+      var t0 = today();
+      var list = db.policies.slice().sort(byDate('end'));
+      document.getElementById('policies').innerHTML = list.length ? list.map(function (p) {
+        var e = parseDate(p.end), tag = '';
+        if (e) tag = days(t0, e) < 0 ? '<span class="pill bad">Expired</span>' : '<span class="pill ok">Valid</span>';
+        return '<div class="card"><div class="top"><span class="title">' + esc(p.who) + ' — ' + esc(p.kind) + '</span>' + tag + '</div>' +
+          '<div class="sub">' + esc(p.provider) + (p.ref ? ' · No. ' + esc(p.ref) : '') + (num(p.cost) ? ' · ' + money(p.cost) : '') + '</div>' +
+          (p.start || p.end ? '<div class="sub">' + fmtDate(p.start) + ' → ' + fmtDate(p.end) + '</div>' : '') +
+          (p.phone ? '<div class="sub">☎️ <a href="tel:' + esc(p.phone.replace(/[^+\d]/g, '')) + '">' + esc(p.phone) + '</a></div>' : '') +
+          (p.notes ? '<div class="notes">' + esc(p.notes) + '</div>' : '') + actions('policies', p.id) + '</div>';
+      }).join('') : '<p class="empty">No insurance or documents yet.</p>';
+    }
+
+    function renderRates() {
+      document.getElementById('rates').innerHTML = CURRENCIES.filter(function (c) { return c !== 'SGD'; }).map(function (c) {
+        return '<label>' + c + ' <input type="number" step="0.0001" min="0" data-rate="' + c + '" value="' + esc(db.rates[c]) + '"></label>';
+      }).join('');
+    }
+
+    function render() {
+      renderTripPick(); renderOverview(); renderAlerts(); renderStays(); renderCosts(); renderCash(); renderPolicies(); renderRates();
+    }
+
+    // ---------- editing ----------
+    var editing = null;
+    function openEditor(type, id) {
+      var schema = SCHEMA[type];
+      var item = id ? db[type].find(function (x) { return x.id === id; }) : { trip: db.selectedTrip || '', currency: 'SGD', status: 'Paid' };
+      editing = { type: type, id: id };
+      document.getElementById('editorTitle').textContent = (id ? 'Edit ' : 'Add ') + schema.title.toLowerCase();
+      document.getElementById('editorFields').innerHTML = schema.fields.map(function (f) {
+        var key = f[0], label = f[1], kind = f[2], v = item[key] == null ? '' : item[key], input;
+        if (kind === 'textarea') input = '<textarea name="' + key + '">' + esc(v) + '</textarea>';
+        else if (kind === 'trip') input = '<select name="trip"><option value="">(none)</option>' + db.trips.map(function (t) {
+          return '<option value="' + esc(t.id) + '"' + (t.id === v ? ' selected' : '') + '>' + esc(t.name) + '</option>'; }).join('') + '</select>';
+        else if (kind === 'currency') input = '<select name="currency">' + CURRENCIES.map(function (c) {
+          return '<option' + (c === v ? ' selected' : '') + '>' + c + '</option>'; }).join('') + '</select>';
+        else if (kind === 'status') input = '<select name="status">' + STATUSES.map(function (c) {
+          return '<option' + (c === v ? ' selected' : '') + '>' + c + '</option>'; }).join('') + '</select>';
+        else input = '<input name="' + key + '" type="' + kind + '"' + (kind === 'number' ? ' step="0.01"' : '') + ' value="' + esc(v) + '">';
+        return '<label>' + esc(label) + '</label>' + input;
+      }).join('');
+      var dlg = document.getElementById('editor');
+      dlg.returnValue = '';
+      dlg.showModal();
+    }
+
+    document.getElementById('editor').addEventListener('close', function () {
+      var dlg = document.getElementById('editor');
+      if (dlg.returnValue !== 'save' || !editing) return;
+      var form = document.getElementById('editorForm'), data = {};
+      SCHEMA[editing.type].fields.forEach(function (f) { var el = form.querySelector('[name="' + f[0] + '"]'); if (el) data[f[0]] = el.value.trim(); });
+      if (editing.id) Object.assign(db[editing.type].find(function (x) { return x.id === editing.id; }), data);
+      else { data.id = uid(); db[editing.type].push(data); if (editing.type === 'trips') db.selectedTrip = data.id; }
+      editing = null;
+      save();
+    });
+
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest('button');
+      if (!t) return;
+      if (t.dataset.add) openEditor(t.dataset.add);
+      else if (t.dataset.edit) openEditor(t.dataset.edit, t.dataset.id);
+      else if (t.dataset.del) {
+        if (!confirm('Delete this item?')) return;
+        db[t.dataset.del] = db[t.dataset.del].filter(function (x) { return x.id !== t.dataset.id; });
+        save();
+      }
+    });
+
+    document.getElementById('tripPick').addEventListener('change', function (e) { db.selectedTrip = e.target.value; save(); });
+    document.getElementById('rates').addEventListener('change', function (e) {
+      if (e.target.dataset.rate) { db.rates[e.target.dataset.rate] = num(e.target.value); save(); }
+    });
+
+    // ---------- text summary (like the handwritten record) ----------
+    function asText() {
+      var out = [];
+      db.trips.filter(function (t) { return !db.selectedTrip || t.id === db.selectedTrip; }).sort(byDate('start')).forEach(function (t) {
+        out.push(t.name.toUpperCase(), fmtDate(t.start) + ' to ' + fmtDate(t.end));
+        if (t.notes) out.push(t.notes);
+        out.push('');
+        db.stays.filter(function (s) { return s.trip === t.id; }).sort(byDate('checkin')).forEach(function (s, i) {
+          var n = nights(s);
+          out.push('(' + (i + 1) + ') ' + s.place.toUpperCase() + ' - ' + fmtShort(s.checkin) + ' to ' + fmtShort(s.checkout) + ' (' + n + 'N)' + (s.platform ? ' thru ' + s.platform : ''));
+          if (s.name) out.push(s.name);
+          if (num(s.cost)) out.push(money(s.cost) + (n ? ' / ' + money(num(s.cost) / n) + ' per night' : '') + (s.bookedOn ? ' booked on ' + fmtShort(s.bookedOn) : ''));
+          if (s.address) out.push(s.address);
+          if (s.host) out.push('Host: ' + s.host);
+          if (s.cancelBy) out.push('Free cancellation before ' + fmtDate(s.cancelBy) + (s.cancelNote ? ' ' + s.cancelNote : ''));
+          if (s.notes) out.push(s.notes);
+          out.push('');
+        });
+        var ex = db.expenses.filter(function (x) { return x.trip === t.id; }).sort(byDate('date'));
+        if (ex.length) {
+          out.push('COSTS');
+          ex.forEach(function (x) { out.push('- ' + x.item + ' ' + money(x.amount, x.currency) + (x.status && x.status !== 'Paid' ? ' [' + x.status + ']' : '') + (x.paidBy ? ' (' + x.paidBy + ')' : '')); });
+        }
+        var cash = db.cash.filter(function (x) { return x.trip === t.id; });
+        if (cash.length) { out.push('', 'CASH'); cash.forEach(function (x) { out.push('- ' + money(x.amount, x.currency) + (x.note ? ' ' + x.note : '')); }); }
+        out.push('————————————————————', '');
+      });
+      return out.join('\n');
+    }
+
+    document.getElementById('copyText').addEventListener('click', function () {
+      var text = asText();
+      function done() { alert('Copied! You can paste it into WhatsApp or Notes.'); }
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () { prompt('Copy this text:', text); });
+      else prompt('Copy this text:', text);
+    });
+
+    // ---------- backup ----------
+    document.getElementById('exportBtn').addEventListener('click', function () {
+      var blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'travel-backup-' + iso(today()) + '.json';
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+    document.getElementById('importFile').addEventListener('change', function (e) {
+      var f = e.target.files[0];
+      if (!f) return;
+      var r = new FileReader();
+      r.onload = function () {
+        try {
+          var data = normalise(JSON.parse(r.result));
+          if ((db.trips.length || db.stays.length) && !confirm('Replace what is on this device with the backup?')) return;
+          db = data; save(); alert('Backup loaded.');
+        } catch (err) { alert('That file is not a travel backup.'); }
+        e.target.value = '';
+      };
+      r.readAsText(f);
+    });
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      if (confirm('Delete ALL trips on this device? Export a backup first if unsure.')) { db = blank(); save(); }
+    });
+
+    render();
+  })();
+  </script>
+</body>
+</html>
